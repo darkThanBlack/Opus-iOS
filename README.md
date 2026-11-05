@@ -9,7 +9,7 @@ iOS build scripts for the [Opus Codec](http://www.opus-codec.org) - a totally op
 - ✅ iOS Simulator (arm64 for Apple Silicon + x86_64 for Intel)
 - ✅ Swift Package Manager support
 - ✅ CocoaPods support
-- ✅ Minimum iOS 16.0
+- ✅ Minimum iOS 13.0 (device); simulator slice is 14.0 (Xcode 26 clang floor)
 
 ## Installation
 
@@ -102,9 +102,9 @@ If you need to rebuild the library from source:
 Edit `build-libopus.sh` to set your desired versions:
 
 ```bash
-VERSION="1.5.2"        # Opus version
-SDKVERSION="26.0"      # iOS SDK version (run `xcodebuild -showsdks` to check)
-MINIOSVERSION="16.0"   # Minimum iOS deployment target
+VERSION="1.6.1"        # Opus version
+SDKVERSION="$(xcrun --sdk iphoneos --show-sdk-version)"  # auto-detected, override with env
+MINIOSVERSION="13.0"   # Minimum iOS deployment target
 ```
 
 ### Step 2: Build

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Opus-ios"
-  s.version      = "1.9"
+  s.version      = "2.0"
   s.summary      = "iOS build scripts for the Opus Codec."
   s.description  = <<-DESC
     iOS build of the Opus audio codec library. Opus is a totally open, 
@@ -16,8 +16,8 @@ Pod::Spec.new do |s|
   s.author       = { "Chris Ballinger" => "chris@chatsecure.org" }
   s.source       = { :git => "https://github.com/OnBeep/Opus-iOS.git", :tag => s.version.to_s }
   
-  s.platform     = :ios, '16.0'
-  s.ios.deployment_target = '16.0'
+  s.platform     = :ios, '13.0'
+  s.ios.deployment_target = '13.0'
   
   # Use XCFramework for proper simulator support
   s.vendored_frameworks = 'dependencies/opus.xcframework'

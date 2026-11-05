@@ -23,9 +23,9 @@
 ###########################################################################
 #  Choose your libopus version and your currently-installed iOS SDK version:
 #
-VERSION="1.5.2"
-SDKVERSION="26.0"
-MINIOSVERSION="16.0"
+VERSION="1.6.1"
+SDKVERSION="${SDKVERSION:-$(xcrun --sdk iphoneos --show-sdk-version)}"
+MINIOSVERSION="13.0"
 
 ###########################################################################
 #
@@ -174,12 +174,12 @@ echo "Creating framework from static libraries..."
 
 # Create device framework
 echo "Creating iOS Device framework..."
-DEVICE_FRAMEWORK_DIR="${INTERDIR}/frameworks/device/opus.framework"
+DEVICE_FRAMEWORK_DIR="${INTERDIR}/frameworks/device/Opus.framework"
 mkdir -p "${DEVICE_FRAMEWORK_DIR}/Headers"
 
 # Create device static lib
 lipo -create "${INTERDIR}/iPhoneOS${SDKVERSION}-arm64.sdk/lib/libopus.a" \
-    -output "${DEVICE_FRAMEWORK_DIR}/opus"
+    -output "${DEVICE_FRAMEWORK_DIR}/Opus"
 
 # Copy headers
 cp -R ${INTERDIR}/iPhoneOS${SDKVERSION}-arm64.sdk/include/opus/* "${DEVICE_FRAMEWORK_DIR}/Headers/"
@@ -187,7 +187,7 @@ cp -R ${INTERDIR}/iPhoneOS${SDKVERSION}-arm64.sdk/include/opus/* "${DEVICE_FRAME
 # Create module map
 mkdir -p "${DEVICE_FRAMEWORK_DIR}/Modules"
 cat > "${DEVICE_FRAMEWORK_DIR}/Modules/module.modulemap" << EOF
-framework module opus {
+framework module Opus {
   umbrella header "opus.h"
   export *
   module * { export * }
@@ -203,13 +203,13 @@ cat > "${DEVICE_FRAMEWORK_DIR}/Info.plist" << EOF
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>opus</string>
+    <string>Opus</string>
     <key>CFBundleIdentifier</key>
-    <string>org.opus-codec.opus</string>
+    <string>org.opus-codec.Opus</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>opus</string>
+    <string>Opus</string>
     <key>CFBundlePackageType</key>
     <string>FMWK</string>
     <key>CFBundleShortVersionString</key>
@@ -224,7 +224,7 @@ EOF
 
 # Create simulator framework with combined architectures
 echo "Creating iOS Simulator framework..."
-SIM_FRAMEWORK_DIR="${INTERDIR}/frameworks/simulator/opus.framework"
+SIM_FRAMEWORK_DIR="${INTERDIR}/frameworks/simulator/Opus.framework"
 mkdir -p "${SIM_FRAMEWORK_DIR}/Headers"
 mkdir -p "${SIM_FRAMEWORK_DIR}/Modules"
 
@@ -232,18 +232,22 @@ mkdir -p "${SIM_FRAMEWORK_DIR}/Modules"
 lipo -create \
     "${INTERDIR}/iPhoneSimulator${SDKVERSION}-arm64.sdk/lib/libopus.a" \
     "${INTERDIR}/iPhoneSimulator${SDKVERSION}-x86_64.sdk/lib/libopus.a" \
-    -output "${SIM_FRAMEWORK_DIR}/opus"
+    -output "${SIM_FRAMEWORK_DIR}/Opus"
 
 # Copy headers and module map
 cp -R ${INTERDIR}/iPhoneSimulator${SDKVERSION}-arm64.sdk/include/opus/* "${SIM_FRAMEWORK_DIR}/Headers/"
 cp "${DEVICE_FRAMEWORK_DIR}/Modules/module.modulemap" "${SIM_FRAMEWORK_DIR}/Modules/"
 cp "${DEVICE_FRAMEWORK_DIR}/Info.plist" "${SIM_FRAMEWORK_DIR}/"
 
+# Keep the legacy static-library / header pair in sync (dependencies/lib + dependencies/include).
+# Device slice only: device arm64 and simulator arm64 can't coexist in one fat archive.
+cp "${DEVICE_FRAMEWORK_DIR}/Opus" "${OUTPUTDIR}/lib/libopus.a"
+
 echo "Device framework architectures:"
-lipo -info "${DEVICE_FRAMEWORK_DIR}/opus"
+lipo -info "${DEVICE_FRAMEWORK_DIR}/Opus"
 
 echo "Simulator framework architectures:"
-lipo -info "${SIM_FRAMEWORK_DIR}/opus"
+lipo -info "${SIM_FRAMEWORK_DIR}/Opus"
 
 ########################################
 echo "Creating XCFramework..."
@@ -272,11 +276,11 @@ ls -la "${OUTPUTDIR}/opus.xcframework/"
 
 echo ""
 echo "Device library info:"
-lipo -info "${OUTPUTDIR}/opus.xcframework/ios-arm64/libopus.a" 2>/dev/null || echo "(check ios-arm64 directory)"
+lipo -info "${OUTPUTDIR}/opus.xcframework/ios-arm64/Opus.framework/Opus" 2>/dev/null || echo "(check ios-arm64 directory)"
 
 echo ""
 echo "Simulator library info:"
-lipo -info "${OUTPUTDIR}/opus.xcframework/ios-arm64_x86_64-simulator/libopus.a" 2>/dev/null || echo "(check simulator directory)"
+lipo -info "${OUTPUTDIR}/opus.xcframework/ios-arm64_x86_64-simulator/Opus.framework/Opus" 2>/dev/null || echo "(check simulator directory)"
 
 ####################
 
